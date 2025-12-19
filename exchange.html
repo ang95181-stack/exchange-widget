@@ -2,32 +2,51 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>匯率 Widget</title>
+  <title>即時匯率 Widget</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       padding: 8px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                   "Segoe UI", sans-serif;
       background: transparent;
+    }
+    .credit {
+      text-align: right;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .credit a {
+      color: #888;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-<!-- START CurrencyRate Widget -->
-<script>
-var fm = "TWD";
-var to = "EUR,JPY,KRW";
-var tz = "timezone";
-var sz = "1x201";
-var lg = "cn";
-var st = "danger";
-var cd = 0;
-var am = 1;
-</script>
-<script src="https://currencyrate.today/exchangerates"></script>
-<!-- END CurrencyRate Widget -->
+  <!-- START CurrencyRate Widget -->
+  <script>
+    var fm = "TWD";              // 基準幣別
+    var to = "EUR,JPY,KRW";      // 顯示的幣別
+    var tz = "timezone";
+    var sz = "1x201";            // 尺寸
+    var lg = "en";               // 語言
+    var st = "danger";           // 樣式主題
+    var cd = 1;                  // 是否顯示變動
+    var am = 1;
+  </script>
+
+  <script src="https://currencyrate.today/exchangerates"></script>
+  <!-- END CurrencyRate Widget -->
+
+  <div class="credit">
+    <a href="https://currencyrate.today" target="_blank" rel="noopener">
+      CurrencyRate
+    </a>
+  </div>
 
 </body>
 </html>
+
+
