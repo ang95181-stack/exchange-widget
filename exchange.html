@@ -1,34 +1,92 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>匯率 Widget</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>即時匯率 Widget（縮寫版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      padding: 8px;
+    body{
+      margin:0;
+      padding:8px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: transparent;
     }
+    /* 可選：讓字稍微緊湊一點更適合 Notion 小卡 */
+    body { font-size: 14px; }
   </style>
 </head>
 <body>
 
-<!-- START CurrencyRate Widget -->
-<script>
-var fm = "TWD";
-var to = "KRW,JPY,USD,EUR";
-var tz = "timezone";
-var sz = "1x201";
-var lg = "en";
-var st = "danger";
-var cd = 0;
-var am = 1;
-</script>
-<script src="https://currencyrate.today/exchangerates"></script>
-<!-- END CurrencyRate Widget -->
+  <!-- START CurrencyRate Widget -->
+  <script>
+    // 你的設定
+    var fm = "TWD";                 // 基準幣別
+    var to = "USD,EUR,JPY,KRW";     // 顯示幣別（含美金）
+    var tz = "timezone";
+    var sz = "1x201";               // 尺寸
+    var lg = "en";                  // 英文（因為我們要替換英文名稱）
+    var st = "danger";              // 主題
+    var cd = 1;                     // 顯示變動（你要 0/1 都可）
+    var am = 1;
+  </script>
+  <script src="https://currencyrate.today/exchangerates"></script>
+  <!-- END CurrencyRate Widget -->
+
+  <!-- 名稱 → 縮寫：自動替換（不改第三方程式碼，只做前端覆蓋） -->
+  <script>
+    // 英文名稱 → ISO 縮寫
+    const NAME_TO_CODE = new Map([
+      ["New Taiwan Dollar", "TWD"],
+      ["US Dollar", "USD"],
+      ["Euro", "EUR"],
+      ["Japanese Yen", "JPY"],
+      ["South Korean Won", "KRW"],
+      // 如果你之後加別的幣別，就在這裡補：
+      // ["Hong Kong Dollar", "HKD"],
+      // ["Chinese Yuan", "CNY"],
+    ]);
+
+    function replaceTextNodes(root) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+
+      let changed = false;
+      for (const node of nodes) {
+        let t = node.nodeValue;
+        if (!t) continue;
+
+        // 逐一替換
+        for (const [full, code] of NAME_TO_CODE.entries()) {
+          if (t.includes(full)) {
+            t = t.replaceAll(full, code);
+            changed = true;
+          }
+        }
+
+        if (changed) node.nodeValue = t;
+      }
+      return changed;
+    }
+
+    // 由於 widget 可能延遲載入/重繪，我們用 MutationObserver + 輪詢雙保險
+    const runReplace = () => replaceTextNodes(document.body);
+
+    // 1) 先跑幾次輪詢（保證初次載入能替換到）
+    let tries = 0;
+    const timer = setInterval(() => {
+      runReplace();
+      tries++;
+      if (tries >= 30) clearInterval(timer); // 約 15 秒停止
+    }, 500);
+
+    // 2) 監聽 DOM 變動（widget 重繪時也能再替換）
+    const obs = new MutationObserver(() => runReplace());
+    obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    // 可選：一段時間後停止監聽，避免長期占用（不想停就註解掉這段）
+    setTimeout(() => obs.disconnect(), 60000); // 60 秒後停止監聽
+  </script>
 
 </body>
 </html>
-
